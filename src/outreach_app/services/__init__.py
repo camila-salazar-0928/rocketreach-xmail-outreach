@@ -32,7 +32,21 @@ from outreach_app.services.email_event_service import (
     list_email_events_by_contact,
     sanitize_metadata,
 )
-
+from outreach_app.services.campaign_execution_service import (
+    CampaignExecutionSummary,
+    execute_campaign_dry_run,
+    list_pending_campaign_recipients,
+    render_and_mark_recipient_dry_run,
+)
+from outreach_app.services.email_sender import (
+    EmailSenderConfigError,
+    EmailSenderError,
+    EmailSendRequest,
+    EmailSendResult,
+    build_email_message,
+    send_email_via_smtp,
+    validate_smtp_settings,
+)
 
 __all__ = [
     "add_contact_id_to_campaign",
@@ -61,4 +75,15 @@ __all__ = [
     "list_email_events_by_campaign",
     "list_email_events_by_contact",
     "sanitize_metadata",
+    "CampaignExecutionSummary",
+    "execute_campaign_dry_run",
+    "list_pending_campaign_recipients",
+    "render_and_mark_recipient_dry_run",
+    "EmailSenderConfigError",
+    "EmailSenderError",
+    "EmailSendRequest",
+    "EmailSendResult",
+    "build_email_message",
+    "send_email_via_smtp",
+    "validate_smtp_settings",
     ]
