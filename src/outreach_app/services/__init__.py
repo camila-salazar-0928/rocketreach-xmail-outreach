@@ -26,6 +26,13 @@ from outreach_app.services.email_template import (
     render_campaign_email,
     render_template_string,
 )
+from outreach_app.services.email_event_service import (
+    create_email_event,
+    list_email_events_by_campaign,
+    list_email_events_by_contact,
+    sanitize_metadata,
+)
+
 
 __all__ = [
     "add_contact_id_to_campaign",
@@ -50,4 +57,8 @@ __all__ = [
     "build_contact_template_context",
     "render_campaign_email",
     "render_template_string",
-]
+    "create_email_event",
+    "list_email_events_by_campaign",
+    "list_email_events_by_contact",
+    "sanitize_metadata",
+    ]

@@ -2,7 +2,7 @@ import logging
 
 from outreach_app.db.base import Base
 from outreach_app.db.session import engine
-from outreach_app.models.contact import Contact  # noqa: F401
+from outreach_app.models import Campaign, CampaignRecipient, Contact, EmailEvent  # noqa: F401
 
 
 logger = logging.getLogger(__name__)

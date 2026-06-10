@@ -14,6 +14,12 @@ from outreach_app.schemas.contact import (
     ContactSendEligibility,
     ContactUpdate,
 )
+from outreach_app.schemas.email_event import (
+    EmailEventCreate,
+    EmailEventRead,
+    EmailEventType,
+    EmailProvider,
+)
 
 __all__ = [
     "CampaignCreate",
@@ -28,4 +34,8 @@ __all__ = [
     "ContactRead",
     "ContactSendEligibility",
     "ContactUpdate",
+    "EmailEventCreate",
+    "EmailEventRead",
+    "EmailEventType",
+    "EmailProvider",
 ]
