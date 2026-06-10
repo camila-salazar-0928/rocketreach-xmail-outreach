@@ -1,3 +1,14 @@
+from outreach_app.services.campaign_service import (
+    add_contact_id_to_campaign,
+    add_contact_to_campaign,
+    add_contacts_to_campaign,
+    campaign_has_capacity,
+    count_campaign_recipients,
+    create_campaign,
+    get_campaign_by_id,
+    get_campaign_recipient,
+    update_campaign,
+)
 from outreach_app.services.contact_service import (
     create_contact,
     evaluate_contact_send_eligibility,
@@ -10,12 +21,21 @@ from outreach_app.services.contact_service import (
 )
 
 __all__ = [
+    "add_contact_id_to_campaign",
+    "add_contact_to_campaign",
+    "add_contacts_to_campaign",
+    "campaign_has_capacity",
+    "count_campaign_recipients",
+    "create_campaign",
     "create_contact",
     "evaluate_contact_send_eligibility",
+    "get_campaign_by_id",
+    "get_campaign_recipient",
     "get_contact_by_email",
     "get_contact_by_id",
     "mark_contact_blocked",
     "mark_contact_bounced",
     "mark_contact_unsubscribed",
+    "update_campaign",
     "update_contact",
 ]
