@@ -19,6 +19,13 @@ from outreach_app.services.contact_service import (
     mark_contact_unsubscribed,
     update_contact,
 )
+from outreach_app.services.email_template import (
+    EmailTemplateRenderError,
+    RenderedEmail,
+    build_contact_template_context,
+    render_campaign_email,
+    render_template_string,
+)
 
 __all__ = [
     "add_contact_id_to_campaign",
@@ -38,4 +45,9 @@ __all__ = [
     "mark_contact_unsubscribed",
     "update_campaign",
     "update_contact",
+    "EmailTemplateRenderError",
+    "RenderedEmail",
+    "build_contact_template_context",
+    "render_campaign_email",
+    "render_template_string",
 ]
