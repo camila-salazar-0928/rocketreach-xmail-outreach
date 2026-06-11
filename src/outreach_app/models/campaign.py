@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text, ForeignKey,UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from outreach_app.db.base import Base
@@ -85,4 +85,3 @@ class Campaign(Base):
         back_populates="campaign",
         cascade="all, delete-orphan",
     )
-

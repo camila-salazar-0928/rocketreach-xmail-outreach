@@ -36,6 +36,7 @@ from outreach_app.services.campaign_execution_service import (
     CampaignExecutionSummary,
     execute_campaign_dry_run,
     list_pending_campaign_recipients,
+    process_campaign_recipient,
     render_and_mark_recipient_dry_run,
 )
 from outreach_app.services.email_sender import (
@@ -79,6 +80,7 @@ __all__ = [
     "execute_campaign_dry_run",
     "list_pending_campaign_recipients",
     "render_and_mark_recipient_dry_run",
+    "process_campaign_recipient",
     "EmailSenderConfigError",
     "EmailSenderError",
     "EmailSendRequest",

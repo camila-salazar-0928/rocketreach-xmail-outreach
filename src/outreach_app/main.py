@@ -5,7 +5,8 @@ from fastapi import FastAPI
 
 from outreach_app.core.config import get_settings
 from outreach_app.core.logger import configure_logging
-
+from outreach_app.api.routes_contacts import router as contacts_router
+from outreach_app.db.__init__ import create_database_tables
 
 settings = get_settings()
 
@@ -21,6 +22,7 @@ async def lifespan(app: FastAPI):
         settings.app_name,
         settings.environment,
     )
+    create_database_tables()
 
     yield
 
@@ -32,7 +34,7 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
-
+app.include_router(contacts_router)
 
 @app.get("/health")
 def health_check():

@@ -8,12 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 def create_database_tables() -> None:
-    from outreach_app.models import (  # noqa: F401
-        Campaign,
-        CampaignRecipient,
-        Contact,
-        EmailEvent,
-    )
+    from outreach_app.models.campaign import Campaign  # noqa: F401
+    from outreach_app.models.campaign_recipient import CampaignRecipient  # noqa: F401
+    from outreach_app.models.contact import Contact  # noqa: F401
+    from outreach_app.models.email_event import EmailEvent  # noqa: F401
 
     logger.info("Creating database tables")
 

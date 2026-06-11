@@ -7,13 +7,21 @@ from sqlalchemy.orm import Session, selectinload
 from outreach_app.models.campaign import Campaign
 from outreach_app.models.campaign_recipient import CampaignRecipient
 from outreach_app.schemas.campaign import CampaignRecipientStatus
-from outreach_app.schemas.email_event import EmailEventCreate, EmailEventType, EmailProvider
+from outreach_app.schemas.email_event import (
+    EmailEventCreate,
+    EmailEventType,
+    EmailProvider,
+)
 from outreach_app.services.campaign_service import get_campaign_by_id
 from outreach_app.services.contact_service import evaluate_contact_send_eligibility
 from outreach_app.services.email_event_service import create_email_event
 from outreach_app.services.email_template import (
     EmailTemplateRenderError,
     render_campaign_email,
+)
+from outreach_app.services.email_sender import (
+    EmailSendRequest,
+    send_email_via_smtp,
 )
 
 
@@ -135,7 +143,7 @@ def mark_recipient_failed(
     )
 
 
-def render_and_mark_recipient_dry_run(
+def process_campaign_recipient(
     db: Session,
     campaign: Campaign,
     recipient: CampaignRecipient,
@@ -152,10 +160,11 @@ def render_and_mark_recipient_dry_run(
         return
 
     logger.info(
-        "Processing campaign recipient dry run | campaign_id=%s | recipient_id=%s | contact_id=%s",
+        "Processing campaign recipient | campaign_id=%s | recipient_id=%s | contact_id=%s | dry_run=%s",
         campaign.id,
         recipient.id,
         contact.id,
+        campaign.dry_run,
     )
 
     eligibility = evaluate_contact_send_eligibility(contact)
@@ -204,7 +213,109 @@ def render_and_mark_recipient_dry_run(
         ),
     )
 
-    recipient.status = CampaignRecipientStatus.DRY_RUN.value
+    send_result = send_email_via_smtp(
+        EmailSendRequest(
+            to_email=contact.email,
+            subject=rendered_email.subject,
+            body=rendered_email.body,
+            dry_run=campaign.dry_run,
+        )
+    )
+
+    logger.info(
+        "Email sender result received | campaign_id=%s | recipient_id=%s | contact_id=%s | status=%s | provider=%s",
+        campaign.id,
+        recipient.id,
+        contact.id,
+        send_result.status,
+        send_result.provider,
+    )
+
+    if send_result.status == "dry_run":
+        recipient.status = CampaignRecipientStatus.DRY_RUN.value
+
+        db.add(recipient)
+
+        create_email_event(
+            db=db,
+            event_data=EmailEventCreate(
+                campaign_id=campaign.id,
+                contact_id=contact.id,
+                campaign_recipient_id=recipient.id,
+                event_type=EmailEventType.DRY_RUN,
+                provider=map_email_provider(send_result.provider),
+                provider_message_id=send_result.provider_message_id,
+                metadata={
+                    "reason": "campaign_dry_run_enabled",
+                },
+            ),
+        )
+
+        logger.info(
+            "Campaign recipient marked as dry_run | campaign_id=%s | recipient_id=%s",
+            campaign.id,
+            recipient.id,
+        )
+
+        return
+
+    if send_result.status == "sent":
+        recipient.status = CampaignRecipientStatus.SENT.value
+
+        db.add(recipient)
+
+        create_email_event(
+            db=db,
+            event_data=EmailEventCreate(
+                campaign_id=campaign.id,
+                contact_id=contact.id,
+                campaign_recipient_id=recipient.id,
+                event_type=EmailEventType.SENT,
+                provider=map_email_provider(send_result.provider),
+                provider_message_id=send_result.provider_message_id,
+            ),
+        )
+
+        logger.info(
+            "Campaign recipient marked as sent | campaign_id=%s | recipient_id=%s",
+            campaign.id,
+            recipient.id,
+        )
+
+        return
+
+    if send_result.status == "blocked":
+        recipient.status = CampaignRecipientStatus.SKIPPED.value
+        recipient.skip_reason = send_result.error_message or "email_sending_blocked"
+
+        db.add(recipient)
+
+        create_email_event(
+            db=db,
+            event_data=EmailEventCreate(
+                campaign_id=campaign.id,
+                contact_id=contact.id,
+                campaign_recipient_id=recipient.id,
+                event_type=EmailEventType.BLOCKED,
+                provider=map_email_provider(send_result.provider),
+                error_message=send_result.error_message,
+                metadata={
+                    "reason": send_result.error_message,
+                },
+            ),
+        )
+
+        logger.warning(
+            "Campaign recipient blocked by email sender | campaign_id=%s | recipient_id=%s | reason=%s",
+            campaign.id,
+            recipient.id,
+            send_result.error_message,
+        )
+
+        return
+
+    recipient.status = CampaignRecipientStatus.FAILED.value
+    recipient.error_message = send_result.error_message or "email_sending_failed"
 
     db.add(recipient)
 
@@ -214,19 +325,33 @@ def render_and_mark_recipient_dry_run(
             campaign_id=campaign.id,
             contact_id=contact.id,
             campaign_recipient_id=recipient.id,
-            event_type=EmailEventType.DRY_RUN,
-            provider=EmailProvider.MOCK,
-            metadata={
-                "reason": "campaign_dry_run_enabled",
-            },
+            event_type=EmailEventType.FAILED,
+            provider=map_email_provider(send_result.provider),
+            error_message=send_result.error_message,
         ),
     )
 
-    logger.info(
-        "Campaign recipient dry run completed | campaign_id=%s | recipient_id=%s | contact_id=%s",
+    logger.warning(
+        "Campaign recipient failed during email sending | campaign_id=%s | recipient_id=%s | error=%s",
         campaign.id,
         recipient.id,
-        contact.id,
+        send_result.error_message,
+    )
+
+
+def render_and_mark_recipient_dry_run(
+    db: Session,
+    campaign: Campaign,
+    recipient: CampaignRecipient,
+) -> None:
+    logger.warning(
+        "render_and_mark_recipient_dry_run is deprecated; use process_campaign_recipient instead"
+    )
+
+    process_campaign_recipient(
+        db=db,
+        campaign=campaign,
+        recipient=recipient,
     )
 
 
@@ -277,7 +402,7 @@ def execute_campaign_dry_run(
     total_pending = len(pending_recipients)
 
     for recipient in pending_recipients:
-        render_and_mark_recipient_dry_run(
+        process_campaign_recipient(
             db=db,
             campaign=campaign,
             recipient=recipient,
@@ -321,3 +446,19 @@ def execute_campaign_dry_run(
     )
 
     return summary
+
+
+def map_email_provider(provider: str) -> EmailProvider:
+    if provider == "mock":
+        return EmailProvider.MOCK
+
+    if provider == "smtp":
+        return EmailProvider.SMTP
+
+    if provider == "tencent_xmail":
+        return EmailProvider.TENCENT_XMAIL
+
+    logger.warning("Unknown email provider received | provider=%s", provider)
+
+    return EmailProvider.MOCK
+
