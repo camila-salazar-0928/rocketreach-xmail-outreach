@@ -64,7 +64,7 @@ def create_contact_endpoint(
 )
 def list_contacts_endpoint(
     db: DbSession,
-    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> list[Contact]:
     logger.info(

@@ -395,3 +395,159 @@ def add_contacts_to_campaign(
     )
 
     return recipients
+
+
+def add_contact_ids_to_campaign(
+    db: Session,
+    campaign_id: str,
+    contact_ids: list[str],
+) -> list[CampaignRecipient]:
+    logger.info(
+        "Adding contact ids to campaign in bulk | campaign_id=%s | requested_count=%s",
+        campaign_id,
+        len(contact_ids),
+    )
+
+    campaign = get_campaign_by_id(
+        db=db,
+        campaign_id=campaign_id,
+    )
+
+    if campaign is None:
+        logger.error("Campaign not found for bulk assignment | campaign_id=%s", campaign_id)
+        raise ValueError("campaign_not_found")
+
+    unique_contact_ids = list(dict.fromkeys(contact_ids))
+
+    if len(unique_contact_ids) != len(contact_ids):
+        logger.info(
+            "Duplicate contact ids removed from bulk assignment | campaign_id=%s | original_count=%s | unique_count=%s",
+            campaign_id,
+            len(contact_ids),
+            len(unique_contact_ids),
+        )
+
+    recipients: list[CampaignRecipient] = []
+
+    for contact_id in unique_contact_ids:
+        contact = get_contact_by_id(
+            db=db,
+            contact_id=contact_id,
+        )
+
+        if contact is None:
+            logger.warning(
+                "Contact not found during bulk assignment | campaign_id=%s | contact_id=%s",
+                campaign_id,
+                contact_id,
+            )
+            continue
+
+        recipient = add_contact_to_campaign(
+            db=db,
+            campaign=campaign,
+            contact=contact,
+        )
+
+        recipients.append(recipient)
+
+    summary = {
+        "total_requested": len(contact_ids),
+        "unique_contact_ids": len(unique_contact_ids),
+        "total_processed": len(recipients),
+        "pending": sum(
+            recipient.status == CampaignRecipientStatus.PENDING.value
+            for recipient in recipients
+        ),
+        "skipped": sum(
+            recipient.status == CampaignRecipientStatus.SKIPPED.value
+            for recipient in recipients
+        ),
+    }
+
+    logger.info(
+        "Bulk contact assignment completed | campaign_id=%s | summary=%s",
+        campaign_id,
+        summary,
+    )
+
+    return recipients
+
+
+def list_campaign_recipients(
+    db: Session,
+    campaign_id: str,
+) -> list[CampaignRecipient]:
+    logger.info(
+        "Listing campaign recipients | campaign_id=%s",
+        campaign_id,
+    )
+
+    result = db.execute(
+        select(CampaignRecipient)
+        .where(CampaignRecipient.campaign_id == campaign_id)
+        .order_by(CampaignRecipient.created_at.desc())
+    )
+
+    recipients = list(result.scalars().all())
+
+    logger.info(
+        "Campaign recipients listed | campaign_id=%s | count=%s",
+        campaign_id,
+        len(recipients),
+    )
+
+    return recipients
+
+
+def build_campaign_summary(
+    db: Session,
+    campaign_id: str,
+) -> dict:
+    logger.info(
+        "Building campaign summary | campaign_id=%s",
+        campaign_id,
+    )
+
+    recipients = list_campaign_recipients(
+        db=db,
+        campaign_id=campaign_id,
+    )
+
+    summary = {
+        "campaign_id": campaign_id,
+        "total_recipients": len(recipients),
+        "pending": sum(
+            recipient.status == CampaignRecipientStatus.PENDING.value
+            for recipient in recipients
+        ),
+        "skipped": sum(
+            recipient.status == CampaignRecipientStatus.SKIPPED.value
+            for recipient in recipients
+        ),
+        "dry_run": sum(
+            recipient.status == CampaignRecipientStatus.DRY_RUN.value
+            for recipient in recipients
+        ),
+        "sent": sum(
+            recipient.status == CampaignRecipientStatus.SENT.value
+            for recipient in recipients
+        ),
+        "failed": sum(
+            recipient.status == CampaignRecipientStatus.FAILED.value
+            for recipient in recipients
+        ),
+        "cancelled": sum(
+            recipient.status == CampaignRecipientStatus.CANCELLED.value
+            for recipient in recipients
+        ),
+    }
+
+    logger.info(
+        "Campaign summary built | campaign_id=%s | summary=%s",
+        campaign_id,
+        summary,
+    )
+
+    return summary
+

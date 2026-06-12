@@ -1,4 +1,6 @@
 from outreach_app.schemas.campaign import (
+    CampaignBulkAddContactsRequest,
+    CampaignBulkAddContactsResponse,
     CampaignCreate,
     CampaignRead,
     CampaignRecipientCreate,
@@ -6,6 +8,8 @@ from outreach_app.schemas.campaign import (
     CampaignRecipientStatus,
     CampaignStatus,
     CampaignUpdate,
+    CampaignRecipientDetailRead,
+    CampaignSummaryResponse,
 )
 from outreach_app.schemas.contact import (
     ConsentStatus,
@@ -29,6 +33,8 @@ __all__ = [
     "CampaignRecipientStatus",
     "CampaignStatus",
     "CampaignUpdate",
+    "CampaignBulkAddContactsRequest",
+    "CampaignBulkAddContactsResponse",
     "ConsentStatus",
     "ContactCreate",
     "ContactRead",
@@ -38,4 +44,6 @@ __all__ = [
     "EmailEventRead",
     "EmailEventType",
     "EmailProvider",
+    "CampaignSummaryResponse",
+    "CampaignRecipientDetailRead",
 ]

@@ -1,5 +1,6 @@
 from outreach_app.services.campaign_service import (
     add_contact_id_to_campaign,
+    add_contact_ids_to_campaign,
     add_contact_to_campaign,
     add_contacts_to_campaign,
     campaign_has_capacity,
@@ -8,6 +9,8 @@ from outreach_app.services.campaign_service import (
     get_campaign_by_id,
     get_campaign_recipient,
     update_campaign,
+    build_campaign_summary,
+    list_campaign_recipients,
 )
 from outreach_app.services.contact_service import (
     create_contact,
@@ -51,6 +54,7 @@ from outreach_app.services.email_sender import (
 
 __all__ = [
     "add_contact_id_to_campaign",
+    "add_contact_ids_to_campaign",
     "add_contact_to_campaign",
     "add_contacts_to_campaign",
     "campaign_has_capacity",
@@ -88,4 +92,6 @@ __all__ = [
     "build_email_message",
     "send_email_via_smtp",
     "validate_smtp_settings",
+    "build_campaign_summary",
+    "list_campaign_recipients",
     ]

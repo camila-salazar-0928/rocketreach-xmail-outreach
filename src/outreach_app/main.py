@@ -7,6 +7,8 @@ from outreach_app.core.config import get_settings
 from outreach_app.core.logger import configure_logging
 from outreach_app.api.routes_contacts import router as contacts_router
 from outreach_app.db.__init__ import create_database_tables
+from outreach_app.api.routes_campaigns import router as campaigns_router
+from outreach_app.api.routes_events import router as events_router
 
 settings = get_settings()
 
@@ -35,6 +37,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(contacts_router)
+app.include_router(campaigns_router)
+app.include_router(events_router)
+
 
 @app.get("/health")
 def health_check():

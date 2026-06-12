@@ -181,3 +181,51 @@ class CampaignRecipientRead(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CampaignBulkAddContactsRequest(BaseModel):
+    contact_ids: list[str] = Field(..., min_length=1, max_length=1000)
+
+
+class CampaignBulkAddContactsResponse(BaseModel):
+    campaign_id: str
+    total_requested: int
+    total_processed: int
+    pending: int
+    skipped: int
+    dry_run: int
+    sent: int
+    failed: int
+    recipients: list[CampaignRecipientRead]
+
+
+class CampaignSummaryResponse(BaseModel):
+    campaign_id: str
+    total_recipients: int
+    pending: int
+    skipped: int
+    dry_run: int
+    sent: int
+    failed: int
+    cancelled: int
+
+
+class CampaignRecipientDetailRead(BaseModel):
+    id: str
+    campaign_id: str
+    contact_id: str
+    email: str
+    first_name: str | None
+    last_name: str | None
+    company: str | None
+    job_title: str | None
+    consent_status: str
+    is_active: bool
+    status: str
+    skip_reason: str | None
+    error_message: str | None
+    personalized_subject: str | None
+    sent_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
