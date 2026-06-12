@@ -22,6 +22,7 @@ class ContactBase(BaseModel):
     first_name: str | None = Field(default=None, max_length=120)
     last_name: str | None = Field(default=None, max_length=120)
     company: str | None = Field(default=None, max_length=200)
+    industry: str | None = Field(default=None, max_length=200)
     job_title: str | None = Field(default=None, max_length=200)
     source: str | None = Field(default="manual", max_length=100)
     consent_status: ConsentStatus = ConsentStatus.UNKNOWN
@@ -74,6 +75,24 @@ class ContactUpdate(BaseModel):
     first_name: str | None = Field(default=None, max_length=120)
     last_name: str | None = Field(default=None, max_length=120)
     company: str | None = Field(default=None, max_length=200)
+    industry: str | None = Field(default=None, max_length=200)
+    country: str | None = Field(default=None, max_length=120)
+    region: str | None = Field(default=None, max_length=120)
+    city: str | None = Field(default=None, max_length=120)
+    location: str | None = Field(default=None, max_length=250)
+
+    linkedin_url: str | None = Field(default=None, max_length=500)
+
+    seniority: str | None = Field(default=None, max_length=120)
+    department: str | None = Field(default=None, max_length=120)
+    years_of_experience: str | None = Field(default=None, max_length=50)
+
+    employer_domain: str | None = Field(default=None, max_length=250)
+    employer_website: str | None = Field(default=None, max_length=500)
+    employer_linkedin: str | None = Field(default=None, max_length=500)
+
+    email_lookup_status: str | None = Field(default=None, max_length=120)
+    skills: str | None = Field(default=None)
     job_title: str | None = Field(default=None, max_length=200)
     source: str | None = Field(default=None, max_length=100)
     consent_status: ConsentStatus | None = None
@@ -84,9 +103,23 @@ class ContactUpdate(BaseModel):
         "first_name",
         "last_name",
         "company",
+        "industry",
         "job_title",
         "source",
         "notes",
+        "country",
+        "region",
+        "city",
+        "location",
+        "linkedin_url",
+        "seniority",
+        "department",
+        "years_of_experience",
+        "employer_domain",
+        "employer_website",
+        "employer_linkedin",
+        "email_lookup_status",
+        "skills",
         mode="before",
     )
     @classmethod

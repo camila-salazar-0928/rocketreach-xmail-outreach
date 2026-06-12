@@ -182,4 +182,63 @@ def block_contact(contact_id: str) -> tuple[int, Any]:
     )
 
 
+def create_campaign(payload: dict[str, Any]) -> tuple[int, Any]:
+    return request_api(
+        "POST",
+        "/campaigns",
+        json_payload=payload,
+    )
+
+
+def update_campaign(campaign_id: str, payload: dict[str, Any]) -> tuple[int, Any]:
+    return request_api(
+        "PATCH",
+        f"/campaigns/{campaign_id}",
+        json_payload=payload,
+    )
+
+
+def list_enriched_events(
+    campaign_id: str | None = None,
+    event_type: str | None = None,
+    provider: str | None = None,
+    country: str | None = None,
+    industry: str | None = None,
+    company_contains: str | None = None,
+    job_title_contains: str | None = None,
+    seniority: str | None = None,
+    department: str | None = None,
+    source: str | None = None,
+    email_lookup_status: str | None = None,
+    limit: int = 1000,
+    offset: int = 0,
+) -> tuple[int, Any]:
+    params: dict[str, Any] = {
+        "limit": limit,
+        "offset": offset,
+    }
+
+    optional_params = {
+        "campaign_id": campaign_id,
+        "event_type": event_type,
+        "provider": provider,
+        "country": country,
+        "industry": industry,
+        "company_contains": company_contains,
+        "job_title_contains": job_title_contains,
+        "seniority": seniority,
+        "department": department,
+        "source": source,
+        "email_lookup_status": email_lookup_status,
+    }
+
+    for key, value in optional_params.items():
+        if value and value != "all":
+            params[key] = value
+
+    return request_api(
+        "GET",
+        "/events/enriched",
+        params=params,
+    )
 

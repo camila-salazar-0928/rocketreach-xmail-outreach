@@ -23,6 +23,7 @@ from outreach_app.schemas.email_event import (
     EmailEventRead,
     EmailEventType,
     EmailProvider,
+    EmailEventEnrichedRead,
 )
 
 __all__ = [
@@ -46,4 +47,5 @@ __all__ = [
     "EmailProvider",
     "CampaignSummaryResponse",
     "CampaignRecipientDetailRead",
+    "EmailEventEnrichedRead",
 ]

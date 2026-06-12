@@ -30,6 +30,28 @@ class Contact(Base):
     first_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     company: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    industry: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="Company industry, e.g. Retail, Software, Manufacturing",
+    )
+    country: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    region: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    city: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    location: Mapped[str | None] = mapped_column(String(250), nullable=True)
+
+    linkedin_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    seniority: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    department: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    years_of_experience: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+    employer_domain: Mapped[str | None] = mapped_column(String(250), nullable=True)
+    employer_website: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    employer_linkedin: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    email_lookup_status: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    skills: Mapped[str | None] = mapped_column(Text, nullable=True)
     job_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     source: Mapped[str | None] = mapped_column(

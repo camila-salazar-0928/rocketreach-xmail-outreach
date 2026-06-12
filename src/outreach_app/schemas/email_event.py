@@ -64,3 +64,38 @@ class EmailEventRead(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class EmailEventEnrichedRead(BaseModel):
+    id: str
+
+    campaign_id: str
+    campaign_name: str | None
+    campaign_status: str | None
+
+    contact_id: str
+    email: str | None
+    first_name: str | None
+    last_name: str | None
+    company: str | None
+    industry: str | None
+    country: str | None
+    region: str | None
+    city: str | None
+    location: str | None
+    job_title: str | None
+    seniority: str | None
+    department: str | None
+    source: str | None
+    consent_status: str | None
+    email_lookup_status: str | None
+
+    campaign_recipient_id: str | None
+    event_type: str
+    provider: str | None
+    provider_message_id: str | None
+    error_message: str | None
+    metadata_json: str | None
+    created_at: datetime
+
+

@@ -160,6 +160,86 @@ def update_campaign_endpoint(
 
 
 @router.post(
+    "/{campaign_id}/contacts/bulk",
+    response_model=CampaignBulkAddContactsResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_contacts_to_campaign_bulk_endpoint(
+    campaign_id: str,
+    payload: CampaignBulkAddContactsRequest,
+    db: DbSession,
+) -> CampaignBulkAddContactsResponse:
+    logger.info(
+        "API bulk add contacts to campaign requested | campaign_id=%s | contact_count=%s",
+        campaign_id,
+        len(payload.contact_ids),
+    )
+
+    try:
+        recipients = add_contact_ids_to_campaign(
+            db=db,
+            campaign_id=campaign_id,
+            contact_ids=payload.contact_ids,
+        )
+
+    except ValueError as error:
+        error_message = str(error)
+
+        logger.warning(
+            "API bulk add contacts to campaign failed | campaign_id=%s | error=%s",
+            campaign_id,
+            error_message,
+        )
+
+        if error_message == "campaign_not_found":
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="campaign_not_found",
+            ) from error
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_message,
+        ) from error
+
+    response = CampaignBulkAddContactsResponse(
+        campaign_id=campaign_id,
+        total_requested=len(payload.contact_ids),
+        total_processed=len(recipients),
+        pending=sum(
+            recipient.status == CampaignRecipientStatus.PENDING.value
+            for recipient in recipients
+        ),
+        skipped=sum(
+            recipient.status == CampaignRecipientStatus.SKIPPED.value
+            for recipient in recipients
+        ),
+        dry_run=sum(
+            recipient.status == CampaignRecipientStatus.DRY_RUN.value
+            for recipient in recipients
+        ),
+        sent=sum(
+            recipient.status == CampaignRecipientStatus.SENT.value
+            for recipient in recipients
+        ),
+        failed=sum(
+            recipient.status == CampaignRecipientStatus.FAILED.value
+            for recipient in recipients
+        ),
+        recipients=recipients,
+    )
+
+    logger.info(
+        "API bulk add contacts to campaign completed | campaign_id=%s | pending=%s | skipped=%s",
+        campaign_id,
+        response.pending,
+        response.skipped,
+    )
+
+    return response
+
+
+@router.post(
     "/{campaign_id}/contacts/{contact_id}",
     response_model=CampaignRecipientRead,
     status_code=status.HTTP_201_CREATED,
@@ -373,6 +453,7 @@ def list_campaign_recipients_endpoint(
                 skip_reason=recipient.skip_reason,
                 error_message=recipient.error_message,
                 personalized_subject=recipient.personalized_subject,
+                personalized_body=recipient.personalized_body,
                 sent_at=recipient.sent_at,
                 created_at=recipient.created_at,
                 updated_at=recipient.updated_at,
@@ -429,83 +510,4 @@ def list_campaign_events_endpoint(
 
     return events
 
-
-@router.post(
-    "/{campaign_id}/contacts/bulk",
-    response_model=CampaignBulkAddContactsResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def add_contacts_to_campaign_bulk_endpoint(
-    campaign_id: str,
-    payload: CampaignBulkAddContactsRequest,
-    db: DbSession,
-) -> CampaignBulkAddContactsResponse:
-    logger.info(
-        "API bulk add contacts to campaign requested | campaign_id=%s | contact_count=%s",
-        campaign_id,
-        len(payload.contact_ids),
-    )
-
-    try:
-        recipients = add_contact_ids_to_campaign(
-            db=db,
-            campaign_id=campaign_id,
-            contact_ids=payload.contact_ids,
-        )
-
-    except ValueError as error:
-        error_message = str(error)
-
-        logger.warning(
-            "API bulk add contacts to campaign failed | campaign_id=%s | error=%s",
-            campaign_id,
-            error_message,
-        )
-
-        if error_message == "campaign_not_found":
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="campaign_not_found",
-            ) from error
-
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=error_message,
-        ) from error
-
-    response = CampaignBulkAddContactsResponse(
-        campaign_id=campaign_id,
-        total_requested=len(payload.contact_ids),
-        total_processed=len(recipients),
-        pending=sum(
-            recipient.status == CampaignRecipientStatus.PENDING.value
-            for recipient in recipients
-        ),
-        skipped=sum(
-            recipient.status == CampaignRecipientStatus.SKIPPED.value
-            for recipient in recipients
-        ),
-        dry_run=sum(
-            recipient.status == CampaignRecipientStatus.DRY_RUN.value
-            for recipient in recipients
-        ),
-        sent=sum(
-            recipient.status == CampaignRecipientStatus.SENT.value
-            for recipient in recipients
-        ),
-        failed=sum(
-            recipient.status == CampaignRecipientStatus.FAILED.value
-            for recipient in recipients
-        ),
-        recipients=recipients,
-    )
-
-    logger.info(
-        "API bulk add contacts to campaign completed | campaign_id=%s | pending=%s | skipped=%s",
-        campaign_id,
-        response.pending,
-        response.skipped,
-    )
-
-    return response
 

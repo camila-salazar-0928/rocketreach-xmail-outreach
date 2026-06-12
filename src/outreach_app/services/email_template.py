@@ -28,19 +28,68 @@ def normalize_template_value(value: Any) -> str:
     return str(value).strip()
 
 
-def build_contact_template_context(contact: Contact) -> dict[str, str]:
+def build_contact_template_context(contact) -> dict:
+    """
+    Build the personalization context used by email templates.
+
+    This context controls which variables can be used in campaign templates.
+    Avoid including sensitive values or internal-only fields.
+    """
+    first_name = normalize_template_value(getattr(contact, "first_name", None))
+    last_name = normalize_template_value(getattr(contact, "last_name", None))
+
+    full_name = f"{first_name} {last_name}".strip()
+
     context = {
-        "email": normalize_template_value(contact.email),
-        "first_name": normalize_template_value(contact.first_name),
-        "last_name": normalize_template_value(contact.last_name),
-        "company": normalize_template_value(contact.company),
-        "job_title": normalize_template_value(contact.job_title),
-        "source": normalize_template_value(contact.source),
+        # Basic identity
+        "email": normalize_template_value(getattr(contact, "email", None)),
+        "first_name": first_name,
+        "last_name": last_name,
+        "full_name": full_name,
+
+        # Professional information
+        "company": normalize_template_value(getattr(contact, "company", None)),
+        "industry": normalize_template_value(getattr(contact, "industry", None)),
+        "job_title": normalize_template_value(getattr(contact, "job_title", None)),
+        "seniority": normalize_template_value(getattr(contact, "seniority", None)),
+        "department": normalize_template_value(getattr(contact, "department", None)),
+        "years_of_experience": normalize_template_value(
+            getattr(contact, "years_of_experience", None)
+        ),
+
+        # Location
+        "country": normalize_template_value(getattr(contact, "country", None)),
+        "region": normalize_template_value(getattr(contact, "region", None)),
+        "city": normalize_template_value(getattr(contact, "city", None)),
+        "location": normalize_template_value(getattr(contact, "location", None)),
+
+        # Company digital footprint
+        "employer_domain": normalize_template_value(
+            getattr(contact, "employer_domain", None)
+        ),
+        "employer_website": normalize_template_value(
+            getattr(contact, "employer_website", None)
+        ),
+        "employer_linkedin": normalize_template_value(
+            getattr(contact, "employer_linkedin", None)
+        ),
+
+        # Person digital footprint
+        "linkedin_url": normalize_template_value(
+            getattr(contact, "linkedin_url", None)
+        ),
+
+        # RocketReach metadata useful for segmentation
+        "email_lookup_status": normalize_template_value(
+            getattr(contact, "email_lookup_status", None)
+        ),
+        "skills": normalize_template_value(getattr(contact, "skills", None)),
+        "source": normalize_template_value(getattr(contact, "source", None)),
     }
 
     logger.debug(
-        "Contact template context built | contact_id=%s | available_fields=%s",
-        contact.id,
+        "Contact template context built | contact_id=%s | keys=%s",
+        getattr(contact, "id", None),
         list(context.keys()),
     )
 

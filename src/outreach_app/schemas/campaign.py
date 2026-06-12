@@ -225,6 +225,7 @@ class CampaignRecipientDetailRead(BaseModel):
     skip_reason: str | None
     error_message: str | None
     personalized_subject: str | None
+    personalized_body: str | None
     sent_at: datetime | None
     created_at: datetime
     updated_at: datetime
